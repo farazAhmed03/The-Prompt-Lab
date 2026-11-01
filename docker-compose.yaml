@@ -23,7 +23,6 @@ services:
     env_file:
       - ./.env   
     environment:
-      ME_CONFIG_BASICAUTH: "true"
       PORT: 8081
     depends_on:
       - mongodb
