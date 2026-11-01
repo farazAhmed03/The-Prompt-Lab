@@ -2,6 +2,7 @@ import Prompt from '../models/Prompt.js';
 import User from '../models/User.js';
 import { getMongoStatus } from '../config/db.js';
 import { initialSeedPrompts } from '../config/seedPrompts.js';
+import { escapeRegex, isCleanString, sanitizeHtml } from '../utils/security.js';
 
 // In-Memory store fallback
 export let memoryPrompts = [...initialSeedPrompts];
@@ -38,20 +39,21 @@ export const getPrompts = async (req, res) => {
     if (getMongoStatus()) {
       let query = {};
 
-      if (category && category !== 'All') {
-        query.category = category;
+      if (category && category !== 'All' && isCleanString(category)) {
+        query.category = category.trim();
       }
 
-      if (model && model !== 'All') {
-        query.targetModel = model;
+      if (model && model !== 'All' && isCleanString(model)) {
+        query.targetModel = model.trim();
       }
 
-      if (search) {
+      if (isCleanString(search)) {
+        const cleanSearch = escapeRegex(search.trim());
         query.$or = [
-          { title: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { prompt: { $regex: search, $options: 'i' } },
-          { tags: { $in: [new RegExp(search, 'i')] } },
+          { title: { $regex: cleanSearch, $options: 'i' } },
+          { description: { $regex: cleanSearch, $options: 'i' } },
+          { prompt: { $regex: cleanSearch, $options: 'i' } },
+          { tags: { $in: [new RegExp(cleanSearch, 'i')] } },
         ];
       }
 
@@ -69,16 +71,16 @@ export const getPrompts = async (req, res) => {
     // In-memory fallback
     let filtered = [...memoryPrompts];
 
-    if (category && category !== 'All') {
-      filtered = filtered.filter((p) => p.category === category);
+    if (category && category !== 'All' && isCleanString(category)) {
+      filtered = filtered.filter((p) => p.category === category.trim());
     }
 
-    if (model && model !== 'All') {
-      filtered = filtered.filter((p) => p.targetModel === model);
+    if (model && model !== 'All' && isCleanString(model)) {
+      filtered = filtered.filter((p) => p.targetModel === model.trim());
     }
 
-    if (search) {
-      const q = search.toLowerCase();
+    if (isCleanString(search)) {
+      const q = search.trim().toLowerCase();
       filtered = filtered.filter(
         (p) =>
           p.title.toLowerCase().includes(q) ||
@@ -139,22 +141,26 @@ export const getPromptById = async (req, res) => {
 export const createPrompt = async (req, res) => {
   const { title, description, prompt, category, targetModel, tags } = req.body;
 
-  if (!title || !description || !prompt) {
-    return res.status(400).json({ message: 'Please provide title, description, and prompt content.' });
+  if (!isCleanString(title) || !isCleanString(description) || !isCleanString(prompt)) {
+    return res.status(400).json({ message: 'Please provide valid title, description, and prompt content.' });
   }
 
+  const cleanTitle = sanitizeHtml(title.trim());
+  const cleanDescription = sanitizeHtml(description.trim());
+  const cleanPrompt = sanitizeHtml(prompt.trim());
+
   const tagsArray = Array.isArray(tags)
-    ? tags
+    ? tags.map((t) => (typeof t === 'string' ? sanitizeHtml(t.trim()) : '')).filter(Boolean)
     : typeof tags === 'string'
-    ? tags.split(',').map((t) => t.trim()).filter(Boolean)
+    ? tags.split(',').map((t) => sanitizeHtml(t.trim())).filter(Boolean)
     : [];
 
   try {
     if (getMongoStatus()) {
       const newPrompt = await Prompt.create({
-        title,
-        description,
-        prompt,
+        title: cleanTitle,
+        description: cleanDescription,
+        prompt: cleanPrompt,
         category: category || 'Software Development',
         targetModel: targetModel || 'General / Any LLM',
         tags: tagsArray,
@@ -166,9 +172,9 @@ export const createPrompt = async (req, res) => {
 
     const newPrompt = {
       _id: 'prompt_' + Date.now(),
-      title,
-      description,
-      prompt,
+      title: cleanTitle,
+      description: cleanDescription,
+      prompt: cleanPrompt,
       category: category || 'Software Development',
       targetModel: targetModel || 'General / Any LLM',
       tags: tagsArray,
@@ -205,15 +211,15 @@ export const updatePrompt = async (req, res) => {
         return res.status(403).json({ message: 'Forbidden: You can only edit your own prompts.' });
       }
 
-      if (title) existing.title = title;
-      if (description) existing.description = description;
-      if (prompt) existing.prompt = prompt;
-      if (category) existing.category = category;
-      if (targetModel) existing.targetModel = targetModel;
+      if (isCleanString(title)) existing.title = sanitizeHtml(title.trim());
+      if (isCleanString(description)) existing.description = sanitizeHtml(description.trim());
+      if (isCleanString(prompt)) existing.prompt = sanitizeHtml(prompt.trim());
+      if (isCleanString(category)) existing.category = category.trim();
+      if (isCleanString(targetModel)) existing.targetModel = targetModel.trim();
       if (tags) {
         existing.tags = Array.isArray(tags)
-          ? tags
-          : tags.split(',').map((t) => t.trim()).filter(Boolean);
+          ? tags.map((t) => (typeof t === 'string' ? sanitizeHtml(t.trim()) : '')).filter(Boolean)
+          : tags.split(',').map((t) => sanitizeHtml(t.trim())).filter(Boolean);
       }
       if (isAdmin && typeof isFeatured === 'boolean') {
         existing.isFeatured = isFeatured;
@@ -236,12 +242,14 @@ export const updatePrompt = async (req, res) => {
 
     memoryPrompts[index] = {
       ...p,
-      title: title || p.title,
-      description: description || p.description,
-      prompt: prompt || p.prompt,
-      category: category || p.category,
-      targetModel: targetModel || p.targetModel,
-      tags: tags ? (Array.isArray(tags) ? tags : tags.split(',')) : p.tags,
+      title: isCleanString(title) ? sanitizeHtml(title.trim()) : p.title,
+      description: isCleanString(description) ? sanitizeHtml(description.trim()) : p.description,
+      prompt: isCleanString(prompt) ? sanitizeHtml(prompt.trim()) : p.prompt,
+      category: isCleanString(category) ? category.trim() : p.category,
+      targetModel: isCleanString(targetModel) ? targetModel.trim() : p.targetModel,
+      tags: tags
+        ? (Array.isArray(tags) ? tags : tags.split(',')).map((t) => sanitizeHtml(t.trim())).filter(Boolean)
+        : p.tags,
       isFeatured: isAdmin && typeof isFeatured === 'boolean' ? isFeatured : p.isFeatured,
       updatedAt: new Date().toISOString(),
     };

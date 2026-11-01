@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import { getMongoStatus } from '../config/db.js';
 import { loadStoredUsers, persistUsers } from '../config/storage.js';
+import { isCleanString, sanitizeHtml } from '../utils/security.js';
 
 const adminEmail = process.env.ADMIN_EMAIL || 'admin@devops.com';
 const adminPassword = process.env.ADMIN_PASSWORD || 'admin03042002';
@@ -87,22 +88,28 @@ export const ensureAdminAccount = async () => {
 export const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
 
-  if (!name || !email || !password) {
-    return res.status(400).json({ message: 'Name, email, and password are required.' });
+  if (!isCleanString(name) || !isCleanString(email) || !isCleanString(password)) {
+    return res.status(400).json({ message: 'Name, email, and password are required and must be valid strings.' });
   }
 
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
+  }
+
+  const cleanName = sanitizeHtml(name.trim());
+  const cleanEmail = email.trim().toLowerCase();
   const assignedRole = 'user';
 
   try {
     if (getMongoStatus()) {
-      const userExists = await User.findOne({ email: email.toLowerCase() });
+      const userExists = await User.findOne({ email: cleanEmail });
       if (userExists) {
         return res.status(400).json({ message: 'An account with this email already exists.' });
       }
 
       const user = await User.create({
-        name,
-        email: email.toLowerCase(),
+        name: cleanName,
+        email: cleanEmail,
         password,
         role: assignedRole,
       });
@@ -117,7 +124,7 @@ export const registerUser = async (req, res) => {
     }
 
     // In-memory persistent mode
-    const userExists = memoryUsers.find((u) => u.email === email.toLowerCase());
+    const userExists = memoryUsers.find((u) => u.email === cleanEmail);
     if (userExists) {
       return res.status(400).json({ message: 'An account with this email already exists.' });
     }
@@ -126,8 +133,8 @@ export const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
     const newUser = {
       _id: 'user_' + Date.now(),
-      name,
-      email: email.toLowerCase(),
+      name: cleanName,
+      email: cleanEmail,
       password: hashedPassword,
       role: assignedRole,
       createdAt: new Date().toISOString(),
@@ -151,13 +158,15 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Please provide both email and password.' });
+  if (!isCleanString(email) || !isCleanString(password)) {
+    return res.status(400).json({ message: 'Please provide both valid email and password.' });
   }
+
+  const cleanEmail = email.trim().toLowerCase();
 
   try {
     if (getMongoStatus()) {
-      const user = await User.findOne({ email: email.toLowerCase() });
+      const user = await User.findOne({ email: cleanEmail });
       if (user && (await user.matchPassword(password))) {
         return res.json({
           _id: user._id,
@@ -171,7 +180,7 @@ export const loginUser = async (req, res) => {
     }
 
     // In-memory persistent mode
-    const user = memoryUsers.find((u) => u.email === email.toLowerCase());
+    const user = memoryUsers.find((u) => u.email === cleanEmail);
     if (user && (await bcrypt.compare(password, user.password))) {
       return res.json({
         _id: user._id,
