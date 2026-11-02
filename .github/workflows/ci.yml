@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node.js 20 Environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: 'npm'
           cache-dependency-path: |
             backend/package-lock.json
@@ -46,7 +46,6 @@ jobs:
 
   # ============================================================================
   # JOB 2: Docker Multi-Stage Build & Configuration Validation
-  # Only executes if Job 1 passes!
   # ============================================================================
   docker-validation:
     name: Docker Build & Compose Check
