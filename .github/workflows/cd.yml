@@ -1,0 +1,77 @@
+name: Continuous Deployment (CD)
+
+on:
+  workflow_run:  # Trigger only when CI Completes Successfully
+    workflows: ["Continuous Integration (CI)"]
+    types: [ completed ]
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Application to AWS EC2
+    runs-on: ubuntu-latest
+
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      # Checkout repository code in GitHub runner
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # SSH into EC2 Server & Deploy Application
+      - name: SSH to EC2 and Deploy via Docker Compose
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            REPO_URL="https://github.com/farazAhmed03/The-Prompt-Lab.git"
+            APP_DIR="$HOME/The-Prompt-Lab"
+
+            echo "============================================="
+            echo " [1/5] CHECKING PROJECT DIRECTORY"
+            echo "============================================="
+            if [ ! -d "$APP_DIR" ]; then
+              git clone "$REPO_URL" "$APP_DIR"
+              cd "$APP_DIR"
+            else
+              cd "$APP_DIR"
+              git fetch origin main
+              git reset --hard origin/main
+            fi
+
+            echo "============================================="
+            echo " [2/5] VERIFYING ENVIRONMENT CONFIGURATION"
+            echo "============================================="
+            if [ ! -f .env ]; then
+              cp .env.example .env
+            fi
+
+            echo "============================================="
+            echo " [3/5] BUILDING & STARTING DOCKER CONTAINERS"
+            echo "============================================="
+            docker compose up -d --build --remove-orphans
+
+            echo "============================================="
+            echo " [4/5] CLEANING DANGLING DOCKER IMAGES"
+            echo "============================================="
+            docker image prune -f
+
+            echo "============================================="
+            echo " [5/5] BACKEND API HEALTH CHECK"
+            echo "============================================="
+            # Wait for Node.js + MongoDB to fully initialize
+            sleep 10
+            # Hit /api/status through Nginx proxy — verifies Nginx, Node.js, AND DB are all alive
+            curl --fail --retry 5 --retry-delay 3 http://localhost/api/status || exit 1
+
+            echo "============================================="
+            echo "  DEPLOYMENT SUCCESSFUL! APPLICATION IS LIVE! "
+            echo "============================================="

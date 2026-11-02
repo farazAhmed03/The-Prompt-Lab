@@ -18,7 +18,7 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20 Environment
+      - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
           node-version: 24
