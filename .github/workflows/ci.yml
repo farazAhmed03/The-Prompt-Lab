@@ -1,0 +1,67 @@
+name: Continuous Integration (CI)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ============================================================================
+  # JOB 1: Fast Lint & Unit Testing (Fails fast in < 30 seconds on code errors)
+  # ============================================================================
+  test-and-lint:
+    name: Code Quality & Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20 Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      # --- Backend Checks ---
+      - name: Install Backend Dependencies
+        run: cd backend && npm ci
+
+      - name: Run Backend ESLint (Syntax & Style Guard)
+        run: cd backend && npm run lint
+
+      - name: Run Backend Unit Tests (Security, Injection & Logic)
+        run: cd backend && npm test
+
+      # --- Frontend Checks ---
+      - name: Install Frontend Dependencies
+        run: cd frontend && npm ci
+
+      - name: Build Frontend (Vite Production Compilation Check)
+        run: cd frontend && npm run build
+
+  # ============================================================================
+  # JOB 2: Docker Multi-Stage Build & Configuration Validation
+  # Only executes if Job 1 passes!
+  # ============================================================================
+  docker-validation:
+    name: Docker Build & Compose Check
+    needs: test-and-lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Mock Environment from Example
+        run: cp .env.example .env
+
+      - name: Validate Docker Compose Syntax
+        run: docker compose config
+
+      - name: Build Production Docker Images (Multi-Stage Builds)
+        run: docker compose build
