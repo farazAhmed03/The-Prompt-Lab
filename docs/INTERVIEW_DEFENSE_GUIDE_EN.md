@@ -152,3 +152,4 @@
 > 1. **Stateless Compute & Auto-Scaling**: Decouple the monolithic EC2 instance into an Auto Scaling Group (ASG) behind an **Application Load Balancer (ALB)**, moving SSL termination to the ALB with AWS ACM.
 > 2. **Managed Database Tier**: Migrate MongoDB from a single Docker container to **Amazon DocumentDB** or **MongoDB Atlas** with multi-AZ replication, automated backups, and sharding.
 > 3. **Static Caching & Container Orchestration**: Offload React frontend static assets to **Amazon S3** with **Amazon CloudFront CDN** for global edge caching, and migrate backend containers to **Amazon ECS with Fargate** or **Amazon EKS (Kubernetes)** with horizontal pod autoscaling (HPA)."*
+

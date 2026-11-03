@@ -167,3 +167,4 @@ Yeh table interview mein batane ke liye sabse qeemti hai, kyunki interviewer dek
   > 1. Decouple compute into an **Auto Scaling Group** behind an **AWS Application Load Balancer**, terminating SSL at the ALB via ACM.
   > 2. Migrate the database to a managed, multi-AZ replicated service like **Amazon DocumentDB** or **MongoDB Atlas**.
   > 3. Offload frontend static assets to an **Amazon S3 bucket cached globally via Amazon CloudFront CDN**, and transition backend containers to **Amazon ECS with Fargate** or **Kubernetes (EKS)** with horizontal pod autoscaling."*
+
