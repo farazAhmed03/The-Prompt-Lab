@@ -57,15 +57,7 @@ resource "aws_security_group" "my_own_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  ingress {
-    description = "SSL Cert"
-    from_port   = 8994
-    to_port     = 8994
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
+  
   # Outbound: Full internet access for pulling Docker images & packages
   egress {
     description = "Allow all outbound traffic"
