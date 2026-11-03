@@ -28,35 +28,11 @@ jobs:
           port: 22
           script_stop: true
           script: |
-            echo "============================================="
-            echo " [1/5] UPDATING CODE FROM GITHUB"
-            echo "============================================="
-            [ ! -d "/home/ubuntu/The-Prompt-Lab/.git" ] && git clone https://github.com/farazAhmed03/The-Prompt-Lab.git /home/ubuntu/The-Prompt-Lab
+            git -C /home/ubuntu/The-Prompt-Lab pull origin main || git clone https://github.com/farazAhmed03/The-Prompt-Lab.git /home/ubuntu/The-Prompt-Lab
             cd /home/ubuntu/The-Prompt-Lab
-            git fetch origin main
             git reset --hard origin/main
-
-            echo "============================================="
-            echo " [2/5] VERIFYING ENVIRONMENT CONFIGURATION"
-            echo "============================================="
-            [ ! -f .env ] && cp .env.example .env
-
-            echo "============================================="
-            echo " [3/5] BUILDING & STARTING DOCKER CONTAINERS"
-            echo "============================================="
+            test -f .env || cp .env.example .env
             docker compose up -d --build --remove-orphans
-
-            echo "============================================="
-            echo " [4/5] CLEANING DANGLING DOCKER IMAGES"
-            echo "============================================="
             docker image prune -f
-
-            echo "============================================="
-            echo " [5/5] BACKEND API HEALTH CHECK"
-            echo "============================================="
             sleep 8
             curl --fail --retry 5 --retry-delay 3 http://localhost/api/status
-
-            echo "============================================="
-            echo "  DEPLOYMENT SUCCESSFUL! APPLICATION IS LIVE! "
-            echo "============================================="
