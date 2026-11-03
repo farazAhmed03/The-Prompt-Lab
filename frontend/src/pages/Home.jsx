@@ -13,6 +13,10 @@ export default function Home() {
   const [copiedId, setCopiedId] = useState(null);
   const [categoriesStats, setCategoriesStats] = useState(null);
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [promptsPerPage, setPromptsPerPage] = useState(6);
+
   const categories = [
     'All',
     'DevOps & Cloud',
@@ -42,6 +46,7 @@ export default function Home() {
 
       setPrompts(promptsRes.data || []);
       setCategoriesStats(catRes.data);
+      setCurrentPage(1); // Reset page on filter changes
     } catch (err) {
       console.error('Failed to load prompts:', err);
     } finally {
@@ -112,6 +117,22 @@ export default function Home() {
     return 'badge-general';
   };
 
+  // Pagination calculations
+  const totalPrompts = prompts.length;
+  const totalPages = Math.ceil(totalPrompts / promptsPerPage) || 1;
+  const startIndex = (currentPage - 1) * promptsPerPage;
+  const endIndex = Math.min(startIndex + promptsPerPage, totalPrompts);
+  const displayedPrompts = prompts.slice(startIndex, endIndex);
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    setCurrentPage(newPage);
+    const section = document.querySelector('.prompts-section-header');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="container">
       {/* Hero Section */}
@@ -162,7 +183,10 @@ export default function Home() {
             <button
               key={cat}
               className={`cat-chip ${category === cat ? 'active' : ''}`}
-              onClick={() => setCategory(cat)}
+              onClick={() => {
+                setCategory(cat);
+                setCurrentPage(1);
+              }}
             >
               {cat}
               {categoriesStats?.categories?.[cat] && (
@@ -178,7 +202,10 @@ export default function Home() {
             <label className="filter-label">Target Model:</label>
             <select
               value={model}
-              onChange={(e) => setModel(e.target.value)}
+              onChange={(e) => {
+                setModel(e.target.value);
+                setCurrentPage(1);
+              }}
               className="filter-select"
             >
               {models.map((m) => (
@@ -193,7 +220,10 @@ export default function Home() {
             <label className="filter-label">Sort By:</label>
             <select
               value={sort}
-              onChange={(e) => setSort(e.target.value)}
+              onChange={(e) => {
+                setSort(e.target.value);
+                setCurrentPage(1);
+              }}
               className="filter-select"
             >
               <option value="newest">🕒 Newest First</option>
@@ -204,7 +234,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Prompt Cards Grid */}
+      {/* Prompt Cards Grid Header */}
       <div className="prompts-section-header">
         <h2>
           Community Prompts{' '}
@@ -232,80 +262,136 @@ export default function Home() {
               setSearch('');
               setCategory('All');
               setModel('All');
+              setCurrentPage(1);
             }}
           >
             Reset Filters
           </button>
         </div>
       ) : (
-        <div className="prompts-grid">
-          {prompts.map((p) => {
-            const isCopied = copiedId === p._id;
-            const hasLiked = user && p.likes?.includes(user._id);
+        <>
+          <div className="prompts-grid">
+            {displayedPrompts.map((p) => {
+              const isCopied = copiedId === p._id;
+              const hasLiked = user && p.likes?.includes(user._id);
 
-            return (
-              <div key={p._id} className="prompt-card">
-                {/* Card Top: Badges */}
-                <div className="card-top-row">
-                  <div className="badges-group">
-                    <span className="cat-badge">{p.category}</span>
-                    <span className={`model-badge ${getModelBadgeClass(p.targetModel)}`}>
-                      {p.targetModel}
-                    </span>
-                    {p.isFeatured && <span className="featured-star">★ Featured</span>}
-                  </div>
-                  <div className="card-stat-pill">
-                    📋 {p.copies || 0} copies
-                  </div>
-                </div>
-
-                {/* Title & Description */}
-                <h3 className="prompt-card-title">{p.title}</h3>
-                <p className="prompt-card-desc">{p.description}</p>
-
-                {/* Prompt Box */}
-                <div className="prompt-content-box">
-                  <pre className="prompt-text-preview">{p.prompt}</pre>
-                </div>
-
-                {/* Tags */}
-                {p.tags && p.tags.length > 0 && (
-                  <div className="tags-row">
-                    {p.tags.slice(0, 4).map((tag, idx) => (
-                      <span key={idx} className="tag-item">
-                        #{tag}
+              return (
+                <div key={p._id} className="prompt-card">
+                  {/* Card Top: Badges */}
+                  <div className="card-top-row">
+                    <div className="badges-group">
+                      <span className="cat-badge">{p.category}</span>
+                      <span className={`model-badge ${getModelBadgeClass(p.targetModel)}`}>
+                        {p.targetModel}
                       </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Card Footer Actions */}
-                <div className="card-footer">
-                  <div className="author-info">
-                    <span className="author-name">By {p.author || 'Community Member'}</span>
+                      {p.isFeatured && <span className="featured-star">★ Featured</span>}
+                    </div>
+                    <div className="card-stat-pill">
+                      📋 {p.copies || 0} copies
+                    </div>
                   </div>
 
-                  <div className="card-actions">
-                    <button
-                      className={`btn-like ${hasLiked ? 'liked' : ''}`}
-                      onClick={() => handleLike(p._id)}
-                      title="Upvote prompt"
-                    >
-                      ❤️ {p.likes?.length || 0}
-                    </button>
+                  {/* Title & Description */}
+                  <h3 className="prompt-card-title">{p.title}</h3>
+                  <p className="prompt-card-desc">{p.description}</p>
 
-                    <button
-                      className={`btn-copy ${isCopied ? 'copied' : ''}`}
-                      onClick={() => handleCopy(p)}
-                    >
-                      {isCopied ? '✅ Copied!' : '📋 Copy Prompt'}
-                    </button>
+                  {/* Prompt Box */}
+                  <div className="prompt-content-box">
+                    <pre className="prompt-text-preview">{p.prompt}</pre>
+                  </div>
+
+                  {/* Tags */}
+                  {p.tags && p.tags.length > 0 && (
+                    <div className="tags-row">
+                      {p.tags.slice(0, 4).map((tag, idx) => (
+                        <span key={idx} className="tag-item">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Card Footer Actions */}
+                  <div className="card-footer">
+                    <div className="author-info">
+                      <span className="author-name">By {p.author || 'Community Member'}</span>
+                    </div>
+
+                    <div className="card-actions">
+                      <button
+                        className={`btn-like ${hasLiked ? 'liked' : ''}`}
+                        onClick={() => handleLike(p._id)}
+                        title="Upvote prompt"
+                      >
+                        ❤️ {p.likes?.length || 0}
+                      </button>
+
+                      <button
+                        className={`btn-copy ${isCopied ? 'copied' : ''}`}
+                        onClick={() => handleCopy(p)}
+                      >
+                        {isCopied ? '✅ Copied!' : '📋 Copy Prompt'}
+                      </button>
+                    </div>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPrompts > 0 && (
+            <div className="pagination-wrapper">
+              <div className="pagination-info">
+                Showing <strong>{startIndex + 1}</strong>–<strong>{endIndex}</strong> of <strong>{totalPrompts}</strong> prompts
               </div>
-            );
-          })}
-        </div>
+
+              <div className="pagination-controls">
+                <button
+                  className="pagination-btn"
+                  disabled={currentPage === 1}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                >
+                  « Prev
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    className={`pagination-btn page-num ${currentPage === pageNum ? 'active' : ''}`}
+                    onClick={() => handlePageChange(pageNum)}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+
+                <button
+                  className="pagination-btn"
+                  disabled={currentPage === totalPages}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                >
+                  Next »
+                </button>
+              </div>
+
+              <div className="pagination-limit">
+                <label>Per Page:</label>
+                <select
+                  value={promptsPerPage}
+                  onChange={(e) => {
+                    setPromptsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="pagination-select"
+                >
+                  <option value={6}>6</option>
+                  <option value={12}>12</option>
+                  <option value={20}>20</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

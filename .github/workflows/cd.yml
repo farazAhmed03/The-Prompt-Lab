@@ -25,41 +25,8 @@ jobs:
           port: ${{ secrets.EC2_PORT }}
           script_stop: true
           script: |
-            echo "============================================="
-            echo " [1/5] UPDATING CODE FROM GITHUB             "
-            echo "============================================="
-            git -C /home/ubuntu/The-Prompt-Lab pull origin main || git clone https://github.com/farazAhmed03/The-Prompt-Lab.git /home/ubuntu/The-Prompt-Lab
+            test -d /home/ubuntu/The-Prompt-Lab/.git || git clone https://github.com/farazAhmed03/The-Prompt-Lab.git /home/ubuntu/The-Prompt-Lab
             cd /home/ubuntu/The-Prompt-Lab
+            git fetch origin main
             git reset --hard origin/main
-
-            echo "============================================="
-            echo " [2/5] VERIFYING ENVIRONMENT CONFIGURATION   "
-            echo "============================================="
-            test -f .env || cp .env.example .env
-
-            echo "============================================="
-            echo " [3/5] SSL CERTIFICATE PROVISIONING          "
-            echo "============================================="
-            DOMAIN="devops-project-demo.study"
-            if [ ! -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]; then
-              which certbot >/dev/null 2>&1 || (sudo apt-get update -y && sudo apt-get install -y certbot)
-              docker compose stop frontend || true
-              sudo certbot certonly --standalone -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos -m "admin@$DOMAIN"
-              sudo chmod -R 755 /etc/letsencrypt/live /etc/letsencrypt/archive
-            fi
-
-            echo "============================================="
-            echo " [4/5] BUILDING & STARTING DOCKER CONTAINERS "
-            echo "============================================="
-            docker compose up -d --build --remove-orphans
-            docker image prune -f
-
-            echo "============================================="
-            echo " [5/5] BACKEND API & FRONTEND HEALTH CHECK   "
-            echo "============================================="
-            sleep 8
-            curl --fail --retry 5 --retry-delay 3 http://localhost/api/status
-
-            echo "============================================="
-            echo "  DEPLOYMENT & SSL CONFIGURATION SUCCESSFUL! "
-            echo "============================================="
+            bash ./scripts/deploy.sh
