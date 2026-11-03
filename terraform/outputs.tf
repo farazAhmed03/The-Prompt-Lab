@@ -13,11 +13,21 @@ output "ssh_command" {
 }
 
 output "frontend_url" {
-  description = "Public HTTP URL for the React/Nginx Frontend"
+  description = "Public HTTP URL for the React/Nginx Frontend (IP Based)"
   value       = "http://${aws_instance.devops_server.public_ip}"
 }
 
 output "mongo_express_url" {
   description = "Public HTTP URL for the Mongo-Express Administrative Dashboard"
   value       = "http://${aws_instance.devops_server.public_ip}:8081"
+}
+
+output "custom_domain_url" {
+  description = "Live Custom Domain URL (Route 53)"
+  value       = "http://${var.domain_name}"
+}
+
+output "route53_nameservers" {
+  description = "AWS Route 53 Assigned Name Servers (Copy these to your domain registrar settings)"
+  value       = aws_route53_zone.primary.name_servers
 }

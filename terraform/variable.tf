@@ -17,3 +17,9 @@ variable "instance_type" {
   type        = string
   default     = "t3.micro"
 }
+
+variable "domain_name" {
+  description = "Custom domain name for Route 53 DNS routing"
+  type        = string
+  default     = "devops-project-demo.study"
+}
