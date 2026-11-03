@@ -41,13 +41,16 @@ services:
     networks:
       - mern-network
   
-  # 4. React Frontend + Nginx
+  # 4. React Frontend + Nginx (HTTP + SSL HTTPS)
   frontend:
     build: ./frontend
     container_name: mern-frontend
     restart: always
     ports:
-      - "80:8080"  
+      - "80:8080"
+      - "443:8443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - backend
     networks:

@@ -3,36 +3,111 @@ name: Continuous Deployment (CD) to AWS EC2
 on:
   workflow_run:
     workflows: ["Continuous Integration (CI)"]
-    types: [ completed ]
-    branches: [ main ]
+    types: [completed]
+    branches: [main]
 
   workflow_dispatch:
 
+# Prevent two deployments from running at the same time
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+# Deployment Job
 jobs:
   deploy:
     name: Deploy Application to AWS EC2
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
+    # Run only if triggered manually, or if CI finished successfully
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
+    # SSH to EC2 and Deploy via Docker Compose
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
       - name: SSH to EC2 and Deploy via Docker Compose
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_IP }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          script_stop: true
+          port: ${{ secrets.EC2_PORT }}
+          script_stop: true   
+          command_timeout: 10m
           script: |
-            git -C /home/ubuntu/The-Prompt-Lab pull origin main || git clone https://github.com/farazAhmed03/The-Prompt-Lab.git /home/ubuntu/The-Prompt-Lab
-            cd /home/ubuntu/The-Prompt-Lab
-            git reset --hard origin/main
-            test -f .env || cp .env.example .env
-            docker compose up -d --build --remove-orphans
-            docker image prune -f
-            sleep 8
-            curl --fail --retry 5 --retry-delay 3 http://localhost/api/status
+            set -euo pipefail
+
+            APP_DIR=/home/ubuntu/The-Prompt-Lab
+            REPO_URL=https://github.com/farazAhmed03/The-Prompt-Lab.git
+
+            if [ ! -d "$APP_DIR/.git" ]; then
+              git clone "$REPO_URL" "$APP_DIR"
+              CHANGED=true
+            else
+              cd "$APP_DIR"
+              git fetch origin main
+              CHANGED=false
+              if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+                git reset --hard origin/main
+                CHANGED=true
+              fi
+            fi
+
+            cd "$APP_DIR"
+            test -f .env
+
+            # -------------------------------------------------------------
+            # Auto-Provision Free SSL Certificate via Let's Encrypt / Certbot
+            # -------------------------------------------------------------
+            DOMAIN="devops-project-demo.study"
+            if [ ! -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]; then
+              echo "============================================="
+              echo " PROVISIONING SSL CERTIFICATE VIA CERTBOT    "
+              echo "============================================="
+              if ! command -v certbot >/dev/null 2>&1; then
+                sudo apt-get update -y
+                sudo apt-get install -y certbot
+              fi
+
+              # Free port 80 for standalone certificate
+              docker compose stop frontend || true
+
+              sudo certbot certonly --standalone \
+                -d "$DOMAIN" \
+                -d "www.$DOMAIN" \
+                --non-interactive \
+                --agree-tos \
+                -m "admin@$DOMAIN"
+
+              sudo chmod -R 755 /etc/letsencrypt/live /etc/letsencrypt/archive
+              CHANGED=true
+            fi
+
+            # Ensure proper read permissions on existing certificates
+            if [ -d "/etc/letsencrypt/live" ]; then
+              sudo chmod -R 755 /etc/letsencrypt/live /etc/letsencrypt/archive || true
+            fi
+
+            # -------------------------------------------------------------
+            # Build and Launch Docker Containers
+            # -------------------------------------------------------------
+            if [ "$CHANGED" = "true" ] || [ "$(docker compose ps --status running -q | wc -l)" -eq 0 ]; then
+              docker compose up -d --build --remove-orphans
+            fi
+
+            # -------------------------------------------------------------
+            # Health Check Verification
+            # -------------------------------------------------------------
+            for i in $(seq 1 10); do
+              if curl --fail --silent --output /dev/null http://localhost/api/status; then
+                docker image prune -f
+                echo "============================================="
+                echo " DEPLOYMENT & SSL CONFIGURATION SUCCESSFUL!  "
+                echo "============================================="
+                exit 0
+              fi
+              sleep 5
+            done
+
+            docker compose logs --tail=100
+            exit 1
