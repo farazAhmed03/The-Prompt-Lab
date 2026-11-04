@@ -1,195 +1,153 @@
-<mxfile host="app.diagrams.net" modified="2026-11-04T08:00:00.000Z" agent="Antigravity DevOps" version="21.0.0" type="device">
-  <diagram id="promptverse-arch" name="PromptVerse Cloud & DevOps Architecture">
-    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" background="#0f172a" math="0" shadow="0">
+<mxfile host="app.diagrams.net" modified="2026-11-04T08:30:00.000Z" agent="Antigravity DevOps" version="21.0.0" type="device">
+  <diagram id="promptverse-arch" name="PromptVerse Clean Architecture">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="800" background="#11151f" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
 
-        <!-- TITLE BAR -->
-        <mxCell id="title" value="PromptVerse — Cloud Infrastructure &amp; DevOps Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
-          <mxGeometry x="400" y="20" width="800" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="subtitle" value="AWS EC2 • Route 53 DNS • Let's Encrypt SSL • Docker Compose • Nginx Reverse Proxy • GitHub Actions CI/CD" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontColor=#94a3b8;" vertex="1" parent="1">
-          <mxGeometry x="400" y="60" width="800" height="20" as="geometry" />
+        <!-- 1. VPC BOUNDARY -->
+        <mxCell id="vpc_box" value="VPC" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#8b5cf6;strokeWidth=2;align=left;verticalAlign=top;spacingLeft=10;spacingTop=5;fontColor=#ffffff;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="380" y="80" width="1070" height="460" as="geometry" />
         </mxCell>
 
-        <!-- 1. USERS & CLIENTS -->
-        <mxCell id="box_users" value="End Users (Web / Mobile Browsers)&#xa;https://devops-project-demo.study&#xa;https://www.devops-project-demo.study" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#38bdf8;fontColor=#ffffff;strokeWidth=2;fontSize=12;fontStyle=1;align=center;verticalAlign=bottom;spacingBottom=10;" vertex="1" parent="1">
-          <mxGeometry x="640" y="110" width="320" height="90" as="geometry" />
+        <!-- 2. EC2 INSTANCE BOUNDARY -->
+        <mxCell id="ec2_box" value="EC2: devops-project (3.239.236.53)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#141a29;fillOpacity=40;strokeColor=#f59e0b;strokeWidth=2;align=left;verticalAlign=top;spacingLeft=10;spacingTop=5;fontColor=#fcd34d;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="560" y="115" width="860" height="395" as="geometry" />
         </mxCell>
 
-        <!-- 2. ROUTE 53 DNS -->
-        <mxCell id="box_r53" value="AWS Route 53 — Public Hosted Zone&#xa;devops-project-demo.study&#xa;• Apex A Record: @  ➔  3.239.236.53 (TTL: 300s)&#xa;• Subdomain A Record: www  ➔  3.239.236.53 (TTL: 300s)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2e1065;strokeColor=#a855f7;strokeWidth=2;fontColor=#ffffff;fontSize=12;align=left;spacingLeft=15;" vertex="1" parent="1">
-          <mxGeometry x="620" y="250" width="360" height="90" as="geometry" />
+        <!-- 3. DOCKER NETWORK BOUNDARY -->
+        <mxCell id="docker_box" value="Docker Network: mern-network" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#0f172a;fillOpacity=60;strokeColor=#0284c7;strokeWidth=1.5;dashed=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=5;fontColor=#38bdf8;fontStyle=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="710" y="155" width="680" height="330" as="geometry" />
         </mxCell>
 
-        <mxCell id="edge_user_to_r53" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#38bdf8;strokeWidth=2;fontColor=#38bdf8;" edge="1" parent="1" source="box_users" target="box_r53">
+        <!-- 4. USER / ACTOR -->
+        <mxCell id="user_actor" value="User&#xa;Actor" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;strokeColor=#e2e8f0;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="300" width="40" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- 5. ROUTE 53 DNS -->
+        <mxCell id="route53_node" value="Route53/DNS&#xa;devops-project-demo.study" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d97706;strokeColor=#b45309;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="180" y="310" width="55" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- 6. SECURITY GROUP -->
+        <mxCell id="sg_node" value="Security Group&#xa;devops-project-sg" style="shape=mxgraph.aws4.shield;whiteSpace=wrap;html=1;fillColor=#b45309;strokeColor=#f59e0b;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="312" width="50" height="52" as="geometry" />
+        </mxCell>
+
+        <!-- 7. IGW (INTERNET GATEWAY) -->
+        <mxCell id="igw_node" value="IGW&#xa;Internet Gateway" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#7c3aed;strokeColor=#6d28d9;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="310" width="55" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- 8. CERTBOT SSL -->
+        <mxCell id="ssl_node" value="Certbot SSL&#xa;HTTPS :443" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#065f46;strokeColor=#10b981;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="585" y="312" width="60" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- 9. FRONTEND (REACT + NGINX) -->
+        <mxCell id="frontend_node" value="Frontend&#xa;(React + Nginx)" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;size=0.15;fillColor=#0e7490;strokeColor=#22d3ee;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="750" y="310" width="80" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- 10. BACKEND (NODE.JS API) -->
+        <mxCell id="backend_node" value="Backend&#xa;(Node.js API)" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;size=0.15;fillColor=#15803d;strokeColor=#4ade80;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="930" y="310" width="80" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- 11. MONGODB DATABASE -->
+        <mxCell id="mongo_node" value="MongoDB&#xa;Database" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=8;fillColor=#166534;strokeColor=#22c55e;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="220" width="65" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- 12. MONGO-EXPRESS GUI -->
+        <mxCell id="express_node" value="Mongo-Express&#xa;Admin GUI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#581c87;strokeColor=#c084fc;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1115" y="395" width="75" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- CONNECTING EDGES -->
+        <mxCell id="e_user_r53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94a3b8;strokeWidth=1.5;" edge="1" parent="1" source="user_actor" target="route53_node">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="label_dns_query" value="1. DNS Query" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#38bdf8;fontStyle=1;fillColor=#0f172a;" vertex="1" connectable="0" parent="edge_user_to_r53">
-          <mxGeometry x="-0.1" relative="1" as="geometry">
-            <mxPoint as="offset" />
+        <mxCell id="e_r53_sg" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94a3b8;strokeWidth=1.5;" edge="1" parent="1" source="route53_node" target="sg_node">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_sg_igw" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94a3b8;strokeWidth=1.5;" edge="1" parent="1" source="sg_node" target="igw_node">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_igw_ssl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94a3b8;strokeWidth=1.5;" edge="1" parent="1" source="igw_node" target="ssl_node">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ssl_front" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94a3b8;strokeWidth=1.5;" edge="1" parent="1" source="ssl_node" target="frontend_node">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_front_back" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94a3b8;strokeWidth=1.5;" edge="1" parent="1" source="frontend_node" target="backend_node">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_back_mongo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94a3b8;strokeWidth=1.5;" edge="1" parent="1" source="backend_node" target="mongo_node">
+          <mxGeometry relative="1" as="geometry">
+            <Array points="1050 338; 1050 250" />
           </mxGeometry>
         </mxCell>
-
-        <!-- 3. AWS CLOUD BOUNDARY -->
-        <mxCell id="group_aws" value="AWS Cloud — Region: us-east-1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#f59e0b;strokeWidth=3;dashed=1;fontColor=#f59e0b;fontSize=16;fontStyle=1;align=left;verticalAlign=top;spacingLeft=20;spacingTop=15;" vertex="1" parent="1">
-          <mxGeometry x="540" y="380" width="980" height="740" as="geometry" />
+        <mxCell id="e_back_express" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94a3b8;strokeWidth=1.5;" edge="1" parent="1" source="backend_node" target="express_node">
+          <mxGeometry relative="1" as="geometry">
+            <Array points="1050 338; 1050 420" />
+          </mxGeometry>
         </mxCell>
-
-        <!-- 4. SECURITY GROUP FIREWALL -->
-        <mxCell id="group_sg" value="AWS Security Group: devops-project-sg (Firewall)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e1b4b;strokeColor=#6366f1;strokeWidth=2;dashed=1;fontColor=#818cf8;fontSize=14;fontStyle=1;align=left;verticalAlign=top;spacingLeft=20;spacingTop=15;" vertex="1" parent="1">
-          <mxGeometry x="570" y="430" width="920" height="660" as="geometry" />
-        </mxCell>
-
-        <!-- SG PORTS TABLE -->
-        <mxCell id="sg_port_80" value="Port 80 (HTTP)&#xa;Inbound: 0.0.0.0/0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#334155;strokeColor=#64748b;fontColor=#ffffff;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="600" y="475" width="130" height="45" as="geometry" />
-        </mxCell>
-        <mxCell id="sg_port_443" value="Port 443 (HTTPS)&#xa;Inbound: 0.0.0.0/0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#065f46;strokeColor=#10b981;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="745" y="475" width="140" height="45" as="geometry" />
-        </mxCell>
-        <mxCell id="sg_port_22" value="Port 22 (SSH Admin)&#xa;CI/CD &amp; Remote Access" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7f1d1d;strokeColor=#ef4444;fontColor=#ffffff;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="900" y="475" width="145" height="45" as="geometry" />
-        </mxCell>
-        <mxCell id="sg_port_5000" value="Port 5000 (Node API)&#xa;Backend Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#334155;strokeColor=#64748b;fontColor=#ffffff;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="1060" y="475" width="135" height="45" as="geometry" />
-        </mxCell>
-        <mxCell id="sg_port_8081" value="Port 8081 (DB GUI)&#xa;Mongo-Express" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#334155;strokeColor=#64748b;fontColor=#ffffff;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="1210" y="475" width="135" height="45" as="geometry" />
-        </mxCell>
-
-        <!-- 5. EC2 INSTANCE -->
-        <mxCell id="box_ec2" value="AWS EC2 Instance: devops-project&#xa;OS: Ubuntu 24.04 Noble LTS  |  Public IP: 3.239.236.53&#xa;Hardware: 20GB gp3 EBS Volume  |  2GB Linux Swap Space (OOM Protection)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#f59e0b;strokeWidth=2;fontColor=#ffffff;fontSize=13;fontStyle=1;align=left;spacingLeft=20;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
-          <mxGeometry x="600" y="540" width="860" height="520" as="geometry" />
-        </mxCell>
-
-        <!-- CERTBOT & HOST VOLUMES -->
-        <mxCell id="box_certbot" value="Let's Encrypt / Certbot SSL Engine&#xa;Host Path: /etc/letsencrypt/live/devops-project-demo.study/&#xa;• fullchain.pem (Public Cert)  • privkey.pem (Private Key)&#xa;Permissions: chmod -R 755 (Accessible to non-root containers)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#022c22;strokeColor=#059669;fontColor=#a7f3d0;fontSize=11;align=left;spacingLeft=15;" vertex="1" parent="1">
-          <mxGeometry x="630" y="605" width="410" height="75" as="geometry" />
-        </mxCell>
-
-        <mxCell id="box_env" value="Production Environment Config&#xa;Host Path: /home/ubuntu/The-Prompt-Lab/.env&#xa;Protected via .gitignore &amp; Safe CI/CD Check" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#374151;strokeColor=#9ca3af;fontColor=#f3f4f6;fontSize=11;align=left;spacingLeft=15;" vertex="1" parent="1">
-          <mxGeometry x="1060" y="605" width="370" height="75" as="geometry" />
-        </mxCell>
-
-        <!-- 6. DOCKER COMPOSE BRIDGE NETWORK -->
-        <mxCell id="group_docker" value="Docker Compose Stack — Network: mern-network (Bridge)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#0284c7;strokeWidth=2;dashed=1;fontColor=#38bdf8;fontSize=13;fontStyle=1;align=left;verticalAlign=top;spacingLeft=15;spacingTop=10;" vertex="1" parent="1">
-          <mxGeometry x="630" y="700" width="800" height="340" as="geometry" />
-        </mxCell>
-
-        <!-- CONTAINER 1: FRONTEND + NGINX -->
-        <mxCell id="c_frontend" value="1. mern-frontend&#xa;(React 18 Vite + Nginx)&#xa;Image: nginx-unprivileged:alpine&#xa;User: nginx (UID 101)&#xa;&#xa;Ports:&#xa;• Host 80  ➔  Container 8080 (301 Redirect)&#xa;• Host 443 ➔  Container 8443 (HTTPS SSL)&#xa;&#xa;Volume Mount:&#xa;/etc/letsencrypt :ro" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#083344;strokeColor=#06b6d4;fontColor=#ffffff;fontSize=11;align=left;spacingLeft=12;" vertex="1" parent="1">
-          <mxGeometry x="650" y="740" width="220" height="190" as="geometry" />
-        </mxCell>
-
-        <!-- CONTAINER 2: BACKEND API -->
-        <mxCell id="c_backend" value="2. mern-backend&#xa;(Node.js Express REST API)&#xa;Image: node:20-alpine&#xa;User: node (UID 1000)&#xa;&#xa;Port: 5000 (Internal Bridge)&#xa;&#xa;Endpoints:&#xa;• /api/prompts&#xa;• /api/status (Health Check)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#064e3b;strokeColor=#10b981;fontColor=#ffffff;fontSize=11;align=left;spacingLeft=12;" vertex="1" parent="1">
-          <mxGeometry x="910" y="740" width="230" height="190" as="geometry" />
-        </mxCell>
-
-        <!-- CONTAINER 3: MONGODB -->
-        <mxCell id="c_mongodb" value="3. mern-mongodb&#xa;(Database Engine)&#xa;Image: mongo:7.0&#xa;&#xa;Port: 27017 (Internal Only)&#xa;Isolated from Public Internet!&#xa;&#xa;Persistent Volume:&#xa;mongo-data ➔ /data/db" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#14532d;strokeColor=#22c55e;fontColor=#ffffff;fontSize=11;align=left;spacingLeft=12;" vertex="1" parent="1">
-          <mxGeometry x="1180" y="740" width="220" height="190" as="geometry" />
-        </mxCell>
-
-        <!-- CONTAINER 4: MONGO-EXPRESS -->
-        <mxCell id="c_express" value="4. mern-mongo-express&#xa;Database Management Dashboard&#xa;Port: 8081  |  Basic Auth Protected" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3b0764;strokeColor=#a855f7;fontColor=#ffffff;fontSize=11;align=center;" vertex="1" parent="1">
-          <mxGeometry x="910" y="955" width="490" height="60" as="geometry" />
-        </mxCell>
-
-        <!-- INTERNAL EDGES -->
-        <mxCell id="edge_nginx_to_backend" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#06b6d4;strokeWidth=2;" edge="1" parent="1" source="c_frontend" target="c_backend">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="lbl_proxy" value="Reverse Proxy&#xa;proxy_pass /api/" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontColor=#06b6d4;fillColor=#0f172a;" vertex="1" connectable="0" parent="edge_nginx_to_backend">
-          <mxGeometry x="-0.1" relative="1" as="geometry" />
-        </mxCell>
-
-        <mxCell id="edge_backend_to_mongo" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#22c55e;strokeWidth=2;" edge="1" parent="1" source="c_backend" target="c_mongodb">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="lbl_mongoose" value="Mongoose&#xa;mongodb://..." style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontColor=#22c55e;fillColor=#0f172a;" vertex="1" connectable="0" parent="edge_backend_to_mongo">
-          <mxGeometry x="-0.1" relative="1" as="geometry" />
-        </mxCell>
-
-        <mxCell id="edge_express_to_mongo" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#a855f7;strokeWidth=2;" edge="1" parent="1" source="c_express" target="c_mongodb">
+        <mxCell id="e_express_mongo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94a3b8;strokeWidth=1.5;" edge="1" parent="1" source="express_node" target="mongo_node">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
-        <!-- 7. CI/CD PIPELINE COLUMN (LEFT SIDE) -->
-        <mxCell id="group_cicd" value="CI/CD Automation Pipeline (GitHub Actions)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#172554;strokeColor=#2563eb;strokeWidth=2;dashed=1;fontColor=#60a5fa;fontSize=14;fontStyle=1;align=left;verticalAlign=top;spacingLeft=15;spacingTop=10;" vertex="1" parent="1">
-          <mxGeometry x="60" y="380" width="430" height="740" as="geometry" />
+        <!-- CI/CD SECTION (BOTTOM) -->
+        <mxCell id="cicd_box" value="CI/CD Automation Pipeline (GitHub Actions)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#131d2e;strokeColor=#0284c7;strokeWidth=1.2;dashed=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=5;fontColor=#38bdf8;fontStyle=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="580" width="660" height="120" as="geometry" />
         </mxCell>
 
-        <mxCell id="step_dev" value="Developer Workstation&#xa;git push origin main" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#94a3b8;fontColor=#ffffff;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="100" y="440" width="350" height="50" as="geometry" />
+        <mxCell id="dev_actor" value="Developer" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;strokeColor=#e2e8f0;fontColor=#ffffff;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="90" y="615" width="25" height="45" as="geometry" />
         </mxCell>
 
-        <mxCell id="step_repo" value="GitHub Repository: farazAhmed03/The-Prompt-Lab&#xa;Trigger: Push event on main branch" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#3b82f6;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="100" y="530" width="350" height="50" as="geometry" />
+        <mxCell id="gh_repo" value="GitHub Repo&#xa;The-Prompt-Lab" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#3b82f6;fontColor=#ffffff;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="190" y="620" width="70" height="40" as="geometry" />
         </mxCell>
 
-        <mxCell id="step_ci" value="Stage 1: Continuous Integration (ci.yml)&#xa;• Node.js &amp; npm dependency setup&#xa;• Code linting &amp; syntax validation&#xa;• Frontend Vite &amp; Backend build tests" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e3a8a;strokeColor=#3b82f6;fontColor=#bfdbfe;fontSize=11;align=left;spacingLeft=15;" vertex="1" parent="1">
-          <mxGeometry x="100" y="620" width="350" height="75" as="geometry" />
+        <mxCell id="ci_job" value="CI (Test)&#xa;ci.yml" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e3a8a;strokeColor=#3b82f6;fontColor=#ffffff;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="620" width="70" height="40" as="geometry" />
         </mxCell>
 
-        <mxCell id="step_cd" value="Stage 2: Continuous Deployment (cd.yml)&#xa;• Trigger: workflow_run (CI Success)&#xa;• SSH Action: appleboy/ssh-action@v1.2.0&#xa;• Secrets: EC2_IP, EC2_USER, EC2_SSH_KEY, EC2_PORT&#xa;• Connects to EC2 Port 22" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e3a8a;strokeColor=#3b82f6;fontColor=#bfdbfe;fontSize=11;align=left;spacingLeft=15;" vertex="1" parent="1">
-          <mxGeometry x="100" y="735" width="350" height="95" as="geometry" />
+        <mxCell id="cd_job" value="CD (Deploy)&#xa;cd.yml" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#065f46;strokeColor=#10b981;fontColor=#ffffff;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="620" width="75" height="40" as="geometry" />
         </mxCell>
 
-        <mxCell id="step_script" value="Dedicated Deployment Runner: scripts/deploy.sh&#xa;Executes via native #!/usr/bin/env bash on EC2:&#xa;[1/5] Git pull latest changes &amp; hard reset&#xa;[2/5] Verify .env configuration (zero-overwrite safety)&#xa;[3/5] Auto-provision SSL certificate via Certbot&#xa;[4/5] docker compose up -d --build --remove-orphans&#xa;[5/5] Automated curl health check retry loop (10x)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#064e3b;strokeColor=#10b981;fontColor=#a7f3d0;fontSize=11;align=left;spacingLeft=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="100" y="870" width="350" height="150" as="geometry" />
+        <mxCell id="deploy_runner" value="deploy.sh&#xa;Bash Runner" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#042f2e;strokeColor=#14b8a6;fontColor=#5eead4;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="585" y="620" width="80" height="40" as="geometry" />
         </mxCell>
 
         <!-- CI/CD EDGES -->
-        <mxCell id="edge_dev_repo" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#94a3b8;strokeWidth=2;" edge="1" parent="1" source="step_dev" target="step_repo">
+        <mxCell id="e_dev_gh" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94a3b8;strokeWidth=1.2;" edge="1" parent="1" source="dev_actor" target="gh_repo">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_repo_ci" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#3b82f6;strokeWidth=2;" edge="1" parent="1" source="step_repo" target="step_ci">
+        <mxCell id="e_gh_ci" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94a3b8;strokeWidth=1.2;" edge="1" parent="1" source="gh_repo" target="ci_job">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_ci_cd" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#3b82f6;strokeWidth=2;" edge="1" parent="1" source="step_ci" target="step_cd">
+        <mxCell id="e_ci_cd" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94a3b8;strokeWidth=1.2;" edge="1" parent="1" source="ci_job" target="cd_job">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="lbl_ci_success" value="On Success" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontColor=#10b981;fillColor=#0f172a;" vertex="1" connectable="0" parent="edge_ci_cd">
-          <mxGeometry x="-0.1" relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="edge_cd_script" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#10b981;strokeWidth=2;" edge="1" parent="1" source="step_cd" target="step_script">
+        <mxCell id="e_cd_runner" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94a3b8;strokeWidth=1.2;" edge="1" parent="1" source="cd_job" target="deploy_runner">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
-        <!-- SSH EDGE FROM CI/CD TO EC2 -->
-        <mxCell id="edge_ssh" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#ef4444;strokeWidth=3;dashed=1;" edge="1" parent="1" source="step_script" target="sg_port_22">
+        <!-- SSH CONNECTION TO EC2 -->
+        <mxCell id="e_runner_ec2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#38bdf8;strokeWidth=1.5;dashed=1;" edge="1" parent="1" source="deploy_runner" target="ec2_box">
           <mxGeometry relative="1" as="geometry">
-            <Array points="470" y="945">
-              <mxPoint x="470" y="500" />
-            </Array>
+            <Array points="760 640; 760 510" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="lbl_ssh" value="SSH Tunnel (Port 22)&#xa;Deploy Commands" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=11;fontColor=#ef4444;fontStyle=1;fillColor=#0f172a;" vertex="1" connectable="0" parent="edge_ssh">
+        <mxCell id="lbl_ssh" value="SSH Port 22" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=9;fontColor=#38bdf8;fillColor=#11151f;fontStyle=1;" vertex="1" connectable="0" parent="e_runner_ec2">
           <mxGeometry x="-0.1" relative="1" as="geometry" />
-        </mxCell>
-
-        <!-- WEB TRAFFIC EDGE FROM ROUTE 53 TO SG PORT 80 & 443 -->
-        <mxCell id="edge_r53_ec2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#10b981;strokeWidth=3;" edge="1" parent="1" source="box_r53" target="sg_port_443">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="lbl_traffic" value="2. HTTPS Traffic (:443)&#xa;&amp; HTTP Redirect (:80)" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=11;fontColor=#10b981;fontStyle=1;fillColor=#0f172a;" vertex="1" connectable="0" parent="edge_r53_ec2">
-          <mxGeometry x="-0.1" relative="1" as="geometry" />
-        </mxCell>
-
-        <!-- PORT 443 TO NGINX EDGE -->
-        <mxCell id="edge_port_to_nginx" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#10b981;strokeWidth=2;" edge="1" parent="1" source="sg_port_443" target="c_frontend">
-          <mxGeometry relative="1" as="geometry">
-            <Array points="815" y="660">
-              <mxPoint x="760" y="660" />
-            </Array>
-          </mxGeometry>
         </mxCell>
 
       </root>
     </mxGraphModel>
   </diagram>
 </mxfile>
-
