@@ -119,3 +119,4 @@ Jab aap Draw.io mein diagram open kar lein:
 | **Let's Encrypt / Certbot** | 🟢 Emerald Green | Automatic SSL certificates issue karta hai taake site secure lock 🔒 ho. |
 | **Docker Compose Stack** | 🟦 Docker Blue | 4 containers ka isolated network (`mern-frontend`, `mern-backend`, `mern-mongodb`, `mern-mongo-express`). |
 | **CI/CD Pipeline (Left Side)** | 🔵 Dark Blue | Developer ka `git push` jo GitHub Actions aur `scripts/deploy.sh` ke zariye automatically deploy karta hai. |
+

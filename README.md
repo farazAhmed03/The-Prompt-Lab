@@ -26,6 +26,10 @@ This repository demonstrates an end-to-end cloud deployment journey: from **Infr
 
 ## 🏛️ End-to-End System Architecture
 
+<p align="center">
+  <img src="docs/architecture.jpg" alt="PromptVerse Cloud Architecture Diagram" width="100%" />
+</p>
+
 ```mermaid
 graph TD
     Client([🌐 Client Browser / Mobile / Desktop]) -->|HTTPS :443 / HTTP :80| DNS[📡 AWS Route 53 DNS\n'devops-project-demo.study' & 'www']
