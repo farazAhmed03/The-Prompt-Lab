@@ -8,6 +8,10 @@
 [![CloudWatch](https://img.shields.io/badge/AWS-CloudWatch%201--Min%20Alarms-FF4F8B?logo=amazoncloudwatch&logoColor=white)](https://aws.amazon.com/cloudwatch/)
 [![Prometheus](https://img.shields.io/badge/Monitoring-Prometheus%20%7C%20Grafana-F46800?logo=prometheus&logoColor=white)](https://prometheus.io/)
 [![Docker](https://img.shields.io/badge/Docker-Containers-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=farazAhmed03_The-Prompt-Lab&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=farazAhmed03_The-Prompt-Lab)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=farazAhmed03_The-Prompt-Lab&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=farazAhmed03_The-Prompt-Lab)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=farazAhmed03_The-Prompt-Lab&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=farazAhmed03_The-Prompt-Lab)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=farazAhmed03_The-Prompt-Lab&metric=bugs)](https://sonarcloud.io/summary/new_code?id=farazAhmed03_The-Prompt-Lab)
 
 An enterprise-grade, auto-scaled, and cost-optimized cloud architecture deployed on **Amazon Web Services (AWS)** using modern **DevOps & Infrastructure as Code (Terraform)** best practices for **PromptVerse**—a full-stack AI Prompt Engineering & Community Hub.
 

@@ -45,7 +45,24 @@ jobs:
         run: cd frontend && npm run build
 
   # ============================================================================
-  # JOB 2: Docker Multi-Stage Build & Configuration Validation
+  # JOB 2: DevSecOps SAST - SonarQube Cloud Code & Security Analysis
+  # ============================================================================
+  sonarcloud:
+    name: SonarQube Cloud SAST Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code (Full Git History)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarQube Cloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # ============================================================================
+  # JOB 3: Docker Multi-Stage Build & Configuration Validation
   # ============================================================================
   docker-validation:
     name: Docker Build & Compose Check
