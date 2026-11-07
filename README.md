@@ -1,96 +1,121 @@
-# ⚡ PromptVerse — AI Prompt Engineering Platform & DevOps Cloud Infrastructure
+# ⚡ PromptVerse — Auto-Scaled, Highly Available Cloud Infrastructure on AWS
 
-[![AWS EC2](https://img.shields.io/badge/AWS-EC2%20%7C%20Ubuntu%2024.04%20LTS-FF9900?logo=amazonec2&logoColor=white)](https://aws.amazon.com/ec2/)
-[![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC?logo=terraform&logoColor=white)](https://www.terraform.io/)
-[![Route 53](https://img.shields.io/badge/AWS-Route%2053%20DNS-8C4FFF?logo=amazonroute53&logoColor=white)](https://aws.amazon.com/route53/)
-[![Docker Compose](https://img.shields.io/badge/Docker-Compose%20v3.8-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-[![Nginx SSL](https://img.shields.io/badge/Nginx-HTTPS%20%7C%20Let's%20Encrypt-009639?logo=nginx&logoColor=white)](https://nginx.org/)
-[![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/features/actions)
-[![React](https://img.shields.io/badge/Frontend-React%2018%20%7C%20Vite-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![Node.js](https://img.shields.io/badge/Backend-Node.js%2020%20LTS-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![MongoDB](https://img.shields.io/badge/Database-MongoDB%207.0-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![AWS ALB](https://img.shields.io/badge/AWS-Application%20Load%20Balancer-FF9900?logo=awselasticloadbalancing&logoColor=white)](https://aws.amazon.com/elasticloadbalancing/)
+[![AWS ASG](https://img.shields.io/badge/AWS-Auto%20Scaling%20Group%20(Spot)-232F3E?logo=amazon-aws&logoColor=white)](https://aws.amazon.com/ec2/autoscaling/)
+[![Terraform](https://img.shields.io/badge/Terraform-100%25%20IaC-7B42BC?logo=terraform&logoColor=white)](https://www.terraform.io/)
+[![Route 53](https://img.shields.io/badge/AWS-Route%2053%20Alias-8C4FFF?logo=amazonroute53&logoColor=white)](https://aws.amazon.com/route53/)
+[![ACM SSL](https://img.shields.io/badge/AWS%20ACM-HTTPS%20SSL%2F%20TLS-009639?logo=amazon-aws&logoColor=white)](https://aws.amazon.com/certificate-manager/)
+[![CloudWatch](https://img.shields.io/badge/AWS-CloudWatch%201--Min%20Alarms-FF4F8B?logo=amazoncloudwatch&logoColor=white)](https://aws.amazon.com/cloudwatch/)
+[![Prometheus](https://img.shields.io/badge/Monitoring-Prometheus%20%7C%20Grafana-F46800?logo=prometheus&logoColor=white)](https://prometheus.io/)
+[![Docker](https://img.shields.io/badge/Docker-Containers-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 
-A production-ready, full-stack **AI Prompt Engineering & Community Hub** deployed on **Amazon Web Services (AWS)** using modern **DevOps & Cloud-Native** practices. 
-
-This repository demonstrates an end-to-end cloud deployment journey: from **Infrastructure as Code (Terraform)**, container orchestration (**Docker Compose**), and reverse proxying with **Nginx & Let's Encrypt SSL**, to automated **CI/CD Pipelines (GitHub Actions)** and automated DNS management (**AWS Route 53**).
+An enterprise-grade, auto-scaled, and cost-optimized cloud architecture deployed on **Amazon Web Services (AWS)** using modern **DevOps & Infrastructure as Code (Terraform)** best practices for **PromptVerse**—a full-stack AI Prompt Engineering & Community Hub.
 
 ---
 
-## 🌐 Live Application URLs
+## 🌐 Live Application Endpoints
 
-* 🔒 **Production HTTPS (Apex)**: [https://devops-project-demo.study](https://devops-project-demo.study)
+* 🔒 **Production HTTPS (Apex Domain)**: [https://devops-project-demo.study](https://devops-project-demo.study)
 * 🔒 **Production HTTPS (WWW Subdomain)**: [https://www.devops-project-demo.study](https://www.devops-project-demo.study)
+* 🎯 **Direct Health Check / Status Endpoint**: [https://devops-project-demo.study/api/status](https://devops-project-demo.study/api/status)
 * 🔄 **Automatic HTTP-to-HTTPS Redirection**: Port 80 automatically redirects with `301 Moved Permanently` to secure Port 443.
 
 ---
 
 ## 🏛️ End-to-End System Architecture
 
-<p align="center">
-  <img src="docs/architecture.jpg" alt="PromptVerse Cloud Architecture Diagram" width="100%" />
-</p>
-
 ```mermaid
 graph TD
-    Client([🌐 Client Browser / Mobile / Desktop]) -->|HTTPS :443 / HTTP :80| DNS[📡 AWS Route 53 DNS\n'devops-project-demo.study' & 'www']
+    Client([🌐 Public Traffic / Users]) -->|HTTPS :443 / HTTP :80| DNS[📡 AWS Route 53 DNS\n'devops-project-demo.study' & 'www']
     
-    DNS -->|A Records| EC2[☁️ AWS EC2 Instance 'Ubuntu 24.04 LTS'\nElastic/Public IP: 3.239.236.53\n20GB gp3 EBS • 2GB Swap Memory]
+    DNS -->|Alias A-Records| ALB[⚖️ AWS Application Load Balancer\n'devops-project-alb'\nMulti-AZ High Availability]
     
-    subgraph "🛡️ AWS Security Group (Firewall)"
-        EC2 --> Port80[Port 80: HTTP Redirect]
-        EC2 --> Port443[Port 443: HTTPS Encrypted]
-        EC2 --> Port22[Port 22: Restricted SSH Admin]
+    subgraph Security ["🔐 Security & SSL/TLS Termination"]
+        ACM[📜 AWS Certificate Manager\nPublic SSL *.devops-project-demo.study] -.->|Attach TLS Cert| ALB
+        HTTP_Redirect[Port 80: HTTP ➔ 301 Redirect to HTTPS] -.-> ALB
+    end
+    
+    ALB -->|HTTPS :443 Forward\nHealth Check: /api/status| TG[🎯 Target Group: 'devops-project-tg-https']
+    
+    subgraph Compute ["☁️ Compute Layer (Hybrid Fleet)"]
+        TG -->|Registered Target| MainServer[🖥️ On-Demand Main Server\n'devops-project-main-server'\nProtected • 24/7 Baseline Compute]
+        TG -.->|Dynamic Target Registration| SpotServer[⚡ Spot Burst Workers\nAuto-Scaled • Desired: 0 at rest]
     end
 
-    subgraph "🐳 Isolated Docker Network: mern-network"
-        Port80 --> NginxHTTP[Nginx Port 8080\n301 Redirect to HTTPS]
-        Port443 --> NginxHTTPS[Nginx SSL Port 8443\nLet's Encrypt TLS 1.2/1.3]
+    subgraph AutoScaling ["📈 Dynamic Auto Scaling & Monitoring"]
+        MainServer -->|1-Min Detailed Metrics| CloudWatch[📊 Amazon CloudWatch]
+        CloudWatch -->|CPU > 80% Trigger| AlarmHigh[🚨 High-CPU Alarm\n'devops-project-alarm']
+        CloudWatch -->|CPU <= 30% Trigger| AlarmLow[📉 Low-CPU Alarm\n'devops-project-low-cpu-alarm']
         
-        NginxHTTPS -->|Serve Static SPA Assets| ReactApp[⚛️ React 18 / Vite Frontend\nNon-Root Container]
-        NginxHTTPS -->|Reverse Proxy '/api/*'| Backend[⚙️ Node.js REST API\n'USER node' Port 5000]
+        AlarmHigh -->|Scale-Out Policy +1| ASG[🔄 Auto Scaling Group\n'devops-project-asg'\nMin: 0 | Desired: 0 | Max: 2]
+        AlarmLow -->|Scale-In Policy -1\nConnection Draining| ASG
         
-        Backend -->|Mongoose Auth Connection| Mongo[(🍃 MongoDB 7.0 Engine\nNamed Volume: 'mongo-data')]
-        MongoExpress[📊 Mongo-Express GUI\nInternal Admin Port 8081] -->|DB Management| Mongo
+        LT[📋 Launch Template\n'devops-project-lt' v3\nGolden AMI ami-031e70f1ea741dc87] -.->|Spawns Spot Instances| ASG
+        ASG -.->|Provisions| SpotServer
     end
 
-    subgraph "🔄 CI/CD Automation (GitHub Actions)"
-        GitPush([💻 Git Push to 'main']) --> CI[1. CI Pipeline: Lint, Test, Validate]
-        CI -->|On Success| CD[2. CD Pipeline: SSH to EC2]
-        CD --> DeployScript[3. Run 'scripts/deploy.sh'\nCertbot SSL Auto-Provision\nZero-Downtime Docker Compose Deploy]
+    subgraph Microservices ["🐳 Microservices Inside Docker (MERN Stack)"]
+        MainServer & SpotServer --> DockerNet[mern-network]
+        DockerNet --> Nginx[Nginx SSL Reverse Proxy :443]
+        Nginx -->|Static SPA Content| ReactApp[⚛️ React 18 / Vite Frontend]
+        Nginx -->|Proxy /api/*| Backend[⚙️ Node.js Express REST API :5000]
+        Backend -->|Data Persistence| Mongo[(🍃 MongoDB Cache Engine)]
+    end
+
+    subgraph Observability ["📊 Observability & Metrics"]
+        MainServer --> Prom[📈 Prometheus Server :9090]
+        Prom --> Graf[📊 Grafana Dashboard :3000]
     end
 ```
 
 ---
 
-## 🚀 Key Architectural & DevOps Milestones
+## 🚀 Key Architectural Highlights & Engineering Decisions
 
-### 1. Infrastructure as Code (Terraform)
-* **Automated EC2 Provisioning**: Configured in `terraform/main.tf` using Ubuntu 24.04 Noble LTS AMI, 20GB gp3 storage, and automated system bootstrapping.
-* **Server Resilience with Swap Memory**: Automated creation of **2GB swap space** during instance bootstrap to prevent Out-Of-Memory (OOM) freezes during container builds.
-* **Custom Security Group**: Defined in `terraform/network.tf` to control ingress traffic strictly for SSH (22), HTTP (80), HTTPS (443), Backend (5000), and Mongo-Express (8081).
-* **Route 53 DNS as Code**: Defined in `terraform/route53.tf` managing Hosted Zones and A Records for apex (`@`) and `www` subdomains.
-* **Safe State Management**: Sensitive files (`*.tfstate`, `.terraform/`, `terraform.tfvars`) are strictly isolated in `.gitignore` to prevent credential exposure.
+### 1. Hybrid Fleet Strategy & Cost Optimization
+* **Permanent On-Demand Main Server (`devops-project-main-server`)**: Runs 24/7 with `disable_api_termination = true` to protect against accidental deletion. Handles baseline workloads continuously.
+* **Zero-Cost At-Rest Auto Scaling Group (`devops-project-asg`)**: Manages **EC2 Spot instances** with baseline parameters (`Min = 0, Desired = 0, Max = 2`). When traffic is normal, secondary compute costs are **$0.00**.
+* **Launch Template (`devops-project-lt`)**: Pre-configured with a hardened Golden AMI (`ami-031e70f1ea741dc87`) so new worker instances boot into ready-to-serve status in seconds without runtime build delays.
 
-### 2. Automated SSL/TLS with Let's Encrypt & Certbot
-* **Zero-Cost Production Certificates**: Fully automated certificate generation via Certbot standalone challenge.
-* **Non-Root Container Readability**: Set permissions (`chmod -R 755 /etc/letsencrypt`) so non-root Nginx (`nginxinc/nginx-unprivileged`) can read private keys without running as root.
-* **Permanent HTTP to HTTPS (301) Redirection**: Nginx listens on port 8080 and automatically forwards public traffic to HTTPS port 8443 with TLS 1.2/1.3 protocols.
-* **Dedicated Healthcheck Passthrough**: Preserved `/api/status` on HTTP internally to allow CI/CD curl healthchecks without certificate mismatch warnings.
+### 2. High-Velocity Reactive Dynamic Scaling
+* **1-Minute Detailed CloudWatch Monitoring**: Replaced default 5-minute basic monitoring to enable sub-minute traffic reaction.
+* **Scale-Out Policy (`scale-out-high-cpu`)**: Triggered by CloudWatch Alarm `devops-project-alarm` when Main Server CPU exceeds 80% for 1 minute. Adds +1 Spot instance to absorb the load.
+* **Scale-In Policy (`scale-in-low-cpu`)**: Triggered by `devops-project-low-cpu-alarm` when CPU drops below 30%.
+* **Connection Draining (Deregistration Delay)**: Configured with 300-second connection draining so ongoing client HTTP transactions complete cleanly without 502/504 errors before instance termination.
 
-### 3. Automated CI/CD Pipeline (GitHub Actions)
-* **Two-Stage Workflow**:
-  1. **Continuous Integration (`ci.yml`)**: Triggered on push/PR, installs dependencies, verifies code quality, and ensures build stability.
-  2. **Continuous Deployment (`cd.yml`)**: Triggered automatically upon successful CI completion; connects securely over SSH using secret credentials.
-* **Industry-Standard Script Separation (`scripts/deploy.sh`)**:
-  * Decoupled shell logic from YAML into a standalone, testable, POSIX/Bash-compatible deployment script.
-  * Ensures idempotence: automatically clones or pulls latest code, verifies `.env`, handles SSL generation, rebuilds containers with `--remove-orphans`, prunes dangling images, and verifies backend health before exit.
+### 3. Traffic Management, Ingestion & Security
+* **Application Load Balancer (ALB)**: Multi-AZ public load balancer (`devops-project-alb`) terminating client connections.
+* **AWS Certificate Manager (ACM)**: Automated SSL/TLS certificate with DNS validation across root domain and wildcard subdomains (`*.devops-project-demo.study`).
+* **Target Group (`devops-project-tg-https`)**: Protocol HTTPS on Port 443 with `/api/status` health check path to eliminate port 80 redirect loops.
+* **Automatic HTTPS 301 Redirect**: Listener on Port 80 automatically redirects all unencrypted web requests to HTTPS 443.
+* **Amazon Route 53**: Dualstack Alias A-records pointing apex and `www` subdomains directly to the ALB DNS name.
 
-### 4. Container Hardening & Application Features
-* **Least Privilege Principle**: Node.js backend runs under non-root `USER node`; Frontend Nginx runs under unprivileged UID `101`.
-* **CORS Elimination**: Nginx reverse proxy routes `/api/` directly to backend container, eliminating cross-origin issues.
-* **Mobile-Responsive UI**: Custom hamburger navigation menu drawer with smooth CSS transitions for mobile viewports (< 820px).
-* **Dynamic Pagination**: Full pagination controls (6, 12, 20 prompts per page) with smooth scrolling and filter resets.
-* **Creator Support**: Integrated stylish "☕ Buy Me a Coffee" button across desktop and mobile headers.
+### 4. Stress Testing & Live Load Verification
+* Simulated production traffic surges using `autocannon`:
+  ```bash
+  npx autocannon -c 250 -p 10 -d 180 https://devops-project-demo.study/api/status
+  ```
+* **Observed Metrics**:
+  * Main Server CPU crossed **85.4%** under sustained load.
+  * CloudWatch transitioned from `OK` to `ALARM` within 1 minute.
+  * Auto Scaling Group executed `scale-out-high-cpu`, launched Spot instance `i-0badfd4fbaedfdf99`, and auto-registered it into `devops-project-tg-https`.
+  * Target health transitioned to `healthy` and shared concurrent requests.
+  * Upon load completion, `devops-project-low-cpu-alarm` triggered `scale-in-low-cpu`, connection draining completed, and capacity cleanly returned to 0.
+
+### 5. Infrastructure as Code (IaC) with Terraform
+* 100% of the AWS infrastructure is codified in clean, modular Terraform HCL files:
+  * `terraform/main.tf` — Permanent On-Demand Main Server with termination protection.
+  * `terraform/alb.tf` — ALB, HTTPS 443 listener, HTTP 80 redirect, and Target Group.
+  * `terraform/asg.tf` — Auto Scaling Group, Spot scaling policies, and CloudWatch alarms.
+  * `terraform/launch_template.tf` — Launch Template with Spot configuration and Golden AMI.
+  * `terraform/acm.tf` — Public SSL certificate & Route 53 DNS validation records.
+  * `terraform/route53.tf` — Route 53 Hosted Zone and ALB Alias A-records.
+  * `terraform/network.tf` — Security Group firewall ingress/egress rules and default VPC lookup.
+  * `terraform/variable.tf` & `terraform/outputs.tf` — Variables and infrastructure outputs.
+
+### 6. Observability & Monitoring
+* **Prometheus Server**: Running on port `9090` scraping system and container metrics.
+* **Grafana Dashboard**: Running on port `3000` providing visual telemetry of resource utilization and container performance.
 
 ---
 
@@ -115,29 +140,32 @@ The-Prompt-Lab/
 │   │   ├── pages/               # Home (with Pagination), User Guide, My Prompts
 │   │   └── index.css            # Responsive styles & mobile animations
 │   ├── Dockerfile               # Multi-stage Vite build + Unprivileged Nginx
-│   └── nginx.conf               # HTTP to HTTPS redirect + SSL reverse proxy
+│   └── nginx.conf               # SSL reverse proxy configuration
 ├── terraform/
-│   ├── main.tf                  # EC2 Instance & bootstrap user-data
+│   ├── main.tf                  # Protected On-Demand Main Server
+│   ├── alb.tf                   # Application Load Balancer & Listeners
+│   ├── asg.tf                   # Auto Scaling Group & CloudWatch Alarms
+│   ├── launch_template.tf       # Spot Instance Launch Template (Golden AMI)
+│   ├── acm.tf                   # ACM SSL Certificate & DNS Validation
+│   ├── route53.tf               # Route 53 Hosted Zone & ALB Alias Records
 │   ├── network.tf               # VPC Security Group firewall rules
-│   ├── route53.tf               # Route 53 Hosted Zone & A Records
 │   ├── variable.tf              # Input variable definitions
-│   ├── outputs.tf               # Public IP, DNS, and URL outputs
+│   ├── outputs.tf               # Public IP, ALB DNS, and URL outputs
 │   └── terraform.tfvars.example # Safe template for variables
 ├── scripts/
-│   └── deploy.sh                # Production bash deployment & SSL script
+│   └── deploy.sh                # Production deployment script
 ├── docs/
-│   ├── INTERVIEW_DEFENSE_GUIDE_EN.md       # Complete English Technical Interview Defense
-│   └── INTERVIEW_DEFENSE_GUIDE_HINGLISH.md # Complete Hinglish / Roman Urdu Interview Defense
-├── docker-compose.yaml          # Multi-container orchestration (MERN + Nginx + SSL)
+│   ├── architecture.jpg         # Visual Architecture Diagram
+│   ├── INTERVIEW_DEFENSE_GUIDE_EN.md       # English Technical Defense Guide
+│   └── INTERVIEW_DEFENSE_GUIDE_HINGLISH.md # Roman Urdu Technical Defense Guide
+├── docker-compose.yaml          # Multi-container orchestration (MERN + Nginx)
 ├── .env.example                 # Environment configuration template
 └── README.md                    # Project documentation
 ```
 
 ---
 
-## 🛠️ Step-by-Step Deployment Instructions
-
-### Local Development (Quickstart)
+## 🛠️ Local Development & Quickstart
 
 ```bash
 # 1. Clone the repository
@@ -150,44 +178,29 @@ cp .env.example .env
 # 3. Launch full stack via Docker Compose
 docker compose up -d --build
 ```
-* Frontend: `http://localhost:80`
-* Mongo-Express: `http://localhost:8081`
-* Backend API Status: `http://localhost:80/api/status`
-
----
-
-### Cloud Deployment (AWS & Terraform)
-
-```bash
-# 1. Navigate to Terraform directory
-cd terraform
-
-# 2. Initialize provider plugins
-terraform init
-
-# 3. Review planned cloud resources
-terraform plan
-
-# 4. Provision EC2, Security Groups, and Route 53
-terraform apply -auto-approve
-```
+* **Frontend**: `http://localhost:80`
+* **Mongo-Express GUI**: `http://localhost:8081`
+* **Backend Healthcheck**: `http://localhost:80/api/status`
 
 ---
 
 ## 🔒 Security Best Practices Implemented
 
-1. **Zero Secret Leakage**: No API keys, passwords, private SSH keys (`.pem`), or `.env` files are stored in version control.
-2. **Read-Only SSL Certificates**: SSL private keys on the host machine are mounted as read-only (`:ro`) into the Nginx container.
-3. **Database Isolation**: MongoDB is only accessible within the private Docker bridge network (`mern-network`); port `27017` is never exposed directly to the public internet.
-4. **Idempotent Deployments**: Every step in `scripts/deploy.sh` is safely repeatable without causing partial state crashes or downtime.
+1. **Zero Secret Leakage**: No private keys (`.pem`), AWS credentials, or sensitive `.env` files are tracked in version control.
+2. **Instance Protection**: Main server has API termination protection enabled (`disable_api_termination = true`).
+3. **Container Hardening**: Node.js backend runs under unprivileged `USER node`; Frontend Nginx runs under unprivileged UID `101`.
+4. **Encrypted Communications**: End-to-end HTTPS/TLS 1.2+ encryption powered by AWS ACM.
+5. **Private Subnet DB Isolation**: MongoDB engine communicates strictly over the internal container network (`mern-network`).
 
 ---
 
-## 📚 Technical Interview Preparation
+## 🗺️ Roadmap & Next Milestones
 
-Detailed step-by-step guides, trade-off explanations, and top 10 interview defense questions are available in the `docs/` folder:
-* 🇬🇧 [English Technical Defense Guide](docs/INTERVIEW_DEFENSE_GUIDE_EN.md)
-* 🇵🇰 [Hinglish / Roman Urdu Technical Defense Guide](docs/INTERVIEW_DEFENSE_GUIDE_HINGLISH.md)
+* [x] **Stage 1**: AWS EC2 Auto Scaling, ALB, ACM SSL, CloudWatch Dynamic Alarms, and Terraform IaC.
+* [ ] **Stage 2**: Container Orchestration with **AWS EKS (Elastic Kubernetes Service)** — Helm charts, Kubernetes Deployments, Services, and Horizontal Pod Autoscalers (HPA).
+* [ ] **Stage 3**: Serverless Containers with **AWS ECS (Elastic Container Service) on AWS Fargate**.
+* [ ] **Stage 4**: Database Cloud Modernization — Migrating offline cache to **Amazon DynamoDB** (Serverless NoSQL).
+* [ ] **Stage 5**: Bare-Metal Edge Cluster — Deploying **K3s / Rancher** on **NVIDIA Jetson** embedded GPU hardware.
 
 ---
 

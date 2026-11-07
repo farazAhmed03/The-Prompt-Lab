@@ -1,11 +1,8 @@
-# ==============================================================================
-# AWS Route 53 DNS Configuration (Dedicated File)
-# ==============================================================================
 
-# 1. Create Route 53 Public Hosted Zone for the domain
+# Route 53 Public Hosted Zone for the domain
 resource "aws_route53_zone" "primary" {
   name          = var.domain_name
-  comment       = "Managed by Terraform for PromptVerse / The-Prompt-Lab"
+  comment       = "Managed by Terraform for PromptVerse High-Availability Cluster"
   force_destroy = false
 
   tags = {
@@ -15,21 +12,28 @@ resource "aws_route53_zone" "primary" {
   }
 }
 
-# 2. Apex A Record: devops-project-demo.study -> EC2 Public IP
+# Apex A-Record (devops-project-demo.study) -> ALB Alias
 resource "aws_route53_record" "apex" {
   zone_id = aws_route53_zone.primary.zone_id
   name    = var.domain_name
   type    = "A"
-  ttl     = 300
-  records = [aws_instance.devops_server.public_ip]
+
+  alias {
+    name                   = aws_lb.main_alb.dns_name
+    zone_id                = aws_lb.main_alb.zone_id
+    evaluate_target_health = true
+  }
 }
 
-# 3. Subdomain A Record: www.devops-project-demo.study -> EC2 Public IP
+# Subdomain A-Record (www.devops-project-demo.study) -> ALB Alias
 resource "aws_route53_record" "www" {
   zone_id = aws_route53_zone.primary.zone_id
   name    = "www.${var.domain_name}"
   type    = "A"
-  ttl     = 300
-  records = [aws_instance.devops_server.public_ip]
-}
 
+  alias {
+    name                   = aws_lb.main_alb.dns_name
+    zone_id                = aws_lb.main_alb.zone_id
+    evaluate_target_health = true
+  }
+}
