@@ -30,45 +30,45 @@ An enterprise-grade, auto-scaled, and cost-optimized cloud architecture deployed
 
 ```mermaid
 graph TD
-    Client([🌐 Public Traffic / Users]) -->|HTTPS :443 / HTTP :80| DNS[📡 AWS Route 53 DNS\n'devops-project-demo.study' & 'www']
+    Client["🌐 Public Traffic / Users"] -->|"HTTPS :443 / HTTP :80"| DNS["📡 AWS Route 53 DNS<br/>devops-project-demo.study & www"]
     
-    DNS -->|Alias A-Records| ALB[⚖️ AWS Application Load Balancer\n'devops-project-alb'\nMulti-AZ High Availability]
+    DNS -->|"Alias A-Records"| ALB["⚖️ AWS Application Load Balancer<br/>devops-project-alb (Multi-AZ)"]
     
     subgraph Security ["🔐 Security & SSL/TLS Termination"]
-        ACM[📜 AWS Certificate Manager\nPublic SSL *.devops-project-demo.study] -.->|Attach TLS Cert| ALB
-        HTTP_Redirect[Port 80: HTTP ➔ 301 Redirect to HTTPS] -.-> ALB
+        ACM["📜 AWS Certificate Manager<br/>Public SSL *.devops-project-demo.study"] -.->|"Attach TLS Cert"| ALB
+        HTTP_Redirect["Port 80: HTTP ➔ 301 Redirect to HTTPS"] -.-> ALB
     end
     
-    ALB -->|HTTPS :443 Forward\nHealth Check: /api/status| TG[🎯 Target Group: 'devops-project-tg-https']
+    ALB -->|"HTTPS :443 Forward<br/>Health Check: /api/status"| TG["🎯 Target Group: devops-project-tg-https"]
     
     subgraph Compute ["☁️ Compute Layer (Hybrid Fleet)"]
-        TG -->|Registered Target| MainServer[🖥️ On-Demand Main Server\n'devops-project-main-server'\nProtected • 24/7 Baseline Compute]
-        TG -.->|Dynamic Target Registration| SpotServer[⚡ Spot Burst Workers\nAuto-Scaled • Desired: 0 at rest]
+        TG -->|"Registered Target"| MainServer["🖥️ On-Demand Main Server<br/>devops-project-main-server<br/>Protected • 24/7 Baseline"]
+        TG -.->|"Dynamic Target Registration"| SpotServer["⚡ Spot Burst Workers<br/>Auto-Scaled • Desired: 0 at rest"]
     end
 
     subgraph AutoScaling ["📈 Dynamic Auto Scaling & Monitoring"]
-        MainServer -->|1-Min Detailed Metrics| CloudWatch[📊 Amazon CloudWatch]
-        CloudWatch -->|CPU > 80% Trigger| AlarmHigh[🚨 High-CPU Alarm\n'devops-project-alarm']
-        CloudWatch -->|CPU <= 30% Trigger| AlarmLow[📉 Low-CPU Alarm\n'devops-project-low-cpu-alarm']
+        MainServer -->|"1-Min Detailed Metrics"| CloudWatch["📊 Amazon CloudWatch"]
+        CloudWatch -->|"CPU > 80% Trigger"| AlarmHigh["🚨 High-CPU Alarm<br/>devops-project-alarm"]
+        CloudWatch -->|"CPU <= 30% Trigger"| AlarmLow["📉 Low-CPU Alarm<br/>devops-project-low-cpu-alarm"]
         
-        AlarmHigh -->|Scale-Out Policy +1| ASG[🔄 Auto Scaling Group\n'devops-project-asg'\nMin: 0 | Desired: 0 | Max: 2]
-        AlarmLow -->|Scale-In Policy -1\nConnection Draining| ASG
+        AlarmHigh -->|"Scale-Out Policy +1"| ASG["🔄 Auto Scaling Group<br/>devops-project-asg<br/>Min: 0, Desired: 0, Max: 2"]
+        AlarmLow -->|"Scale-In Policy -1<br/>Connection Draining"| ASG
         
-        LT[📋 Launch Template\n'devops-project-lt' v3\nGolden AMI ami-031e70f1ea741dc87] -.->|Spawns Spot Instances| ASG
-        ASG -.->|Provisions| SpotServer
+        LT["📋 Launch Template<br/>devops-project-lt v3<br/>Golden AMI ami-031e70f1ea741dc87"] -.->|"Spawns Spot Instances"| ASG
+        ASG -.->|"Provisions"| SpotServer
     end
 
     subgraph Microservices ["🐳 Microservices Inside Docker (MERN Stack)"]
-        MainServer & SpotServer --> DockerNet[mern-network]
-        DockerNet --> Nginx[Nginx SSL Reverse Proxy :443]
-        Nginx -->|Static SPA Content| ReactApp[⚛️ React 18 / Vite Frontend]
-        Nginx -->|Proxy /api/*| Backend[⚙️ Node.js Express REST API :5000]
-        Backend -->|Data Persistence| Mongo[(🍃 MongoDB Cache Engine)]
+        MainServer & SpotServer --> DockerNet["mern-network"]
+        DockerNet --> Nginx["Nginx SSL Reverse Proxy :443"]
+        Nginx -->|"Static SPA Content"| ReactApp["⚛️ React 18 / Vite Frontend"]
+        Nginx -->|"Proxy /api/*"| Backend["⚙️ Node.js Express REST API :5000"]
+        Backend -->|"Data Persistence"| Mongo[("🍃 MongoDB Cache Engine")]
     end
 
     subgraph Observability ["📊 Observability & Metrics"]
-        MainServer --> Prom[📈 Prometheus Server :9090]
-        Prom --> Graf[📊 Grafana Dashboard :3000]
+        MainServer --> Prom["📈 Prometheus Server :9090"]
+        Prom --> Graf["📊 Grafana Dashboard :3000"]
     end
 ```
 
