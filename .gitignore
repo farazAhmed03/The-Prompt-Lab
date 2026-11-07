@@ -77,3 +77,10 @@ Thumbs.db
 *.me
 prompts.me
 faraz.me
+
+# ------------------------------------------------------------------------------
+# 8. Private Technical Prep & Interview Guides (Keep Local Only)
+# ------------------------------------------------------------------------------
+docs/INTERVIEW_DEFENSE_GUIDE_EN.md
+docs/INTERVIEW_DEFENSE_GUIDE_HINGLISH.md
+docs/ARCHITECTURE_DIAGRAM_GUIDE.md

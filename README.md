@@ -24,6 +24,10 @@ An enterprise-grade, auto-scaled, and cost-optimized cloud architecture deployed
 
 ## 🏛️ End-to-End System Architecture
 
+<p align="center">
+  <img src="docs/architecture.jpg" alt="PromptVerse Cloud Architecture Diagram" width="100%" />
+</p>
+
 ```mermaid
 graph TD
     Client([🌐 Public Traffic / Users]) -->|HTTPS :443 / HTTP :80| DNS[📡 AWS Route 53 DNS\n'devops-project-demo.study' & 'www']
@@ -156,8 +160,8 @@ The-Prompt-Lab/
 │   └── deploy.sh                # Production deployment script
 ├── docs/
 │   ├── architecture.jpg         # Visual Architecture Diagram
-│   ├── INTERVIEW_DEFENSE_GUIDE_EN.md       # English Technical Defense Guide
-│   └── INTERVIEW_DEFENSE_GUIDE_HINGLISH.md # Roman Urdu Technical Defense Guide
+│   ├── architecture.svg         # Vector Architecture Diagram
+│   └── architecture.drawio      # Editable Draw.io Architecture Source
 ├── docker-compose.yaml          # Multi-container orchestration (MERN + Nginx)
 ├── .env.example                 # Environment configuration template
 └── README.md                    # Project documentation
