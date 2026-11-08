@@ -32,7 +32,7 @@ export default function AdminDashboard() {
   const handleDeletePrompt = async (id) => {
     if (!window.confirm('Admin Action: Permanently delete this prompt?')) return;
     try {
-      await API.delete(`/prompts/${id}`);
+      await API.delete(`/prompts/${encodeURIComponent(id)}`);
       setPrompts((prev) => prev.filter((p) => p._id !== id));
     } catch (err) {
       alert('Delete failed: ' + err.message);
@@ -41,7 +41,7 @@ export default function AdminDashboard() {
 
   const handleToggleFeatured = async (p) => {
     try {
-      const res = await API.put(`/prompts/${p._id}`, { isFeatured: !p.isFeatured });
+      const res = await API.put(`/prompts/${encodeURIComponent(p._id)}`, { isFeatured: !p.isFeatured });
       setPrompts((prev) => prev.map((item) => (item._id === p._id ? res.data : item)));
     } catch (err) {
       alert('Failed to toggle featured status: ' + err.message);

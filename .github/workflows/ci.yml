@@ -29,7 +29,7 @@ jobs:
 
       # --- Backend Checks ---
       - name: Install Backend Dependencies
-        run: cd backend && npm ci
+        run: cd backend && npm ci --ignore-scripts
 
       - name: Run Backend ESLint (Syntax & Style Guard)
         run: cd backend && npm run lint
@@ -39,7 +39,7 @@ jobs:
 
       # --- Frontend Checks ---
       - name: Install Frontend Dependencies
-        run: cd frontend && npm ci
+        run: cd frontend && npm ci --ignore-scripts
 
       - name: Build Frontend (Vite Production Compilation Check)
         run: cd frontend && npm run build

@@ -10,9 +10,28 @@ import { ensureDefaultPrompts } from './controllers/promptController.js';
 dotenv.config();
 
 const app = express();
+app.disable('x-powered-by');
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// Hardened CORS policy
+const allowedOrigins = [
+  'https://devops-project-demo.study',
+  'https://www.devops-project-demo.study',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:80'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS policy: Origin not allowed'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
