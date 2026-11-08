@@ -55,11 +55,13 @@ backend/node_modules/
 frontend/node_modules/
 
 # ------------------------------------------------------------------------------
-# 5. Production Build Artifacts
+# 5. Production Build Artifacts & Test Coverage
 # ------------------------------------------------------------------------------
 dist/
 build/
 frontend/dist/
+coverage/
+backend/coverage/
 
 # ------------------------------------------------------------------------------
 # 6. Logs & OS Cache Files
