@@ -42,11 +42,12 @@ export default function AdminDashboard() {
   };
 
   const handleToggleFeatured = async (p) => {
-    if (!p?._id || typeof p._id !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(p._id)) return;
+    const promptId = p?._id;
+    if (!promptId || typeof promptId !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(promptId)) return;
     try {
-      const sanitizedId = encodeURIComponent(p._id.trim());
+      const sanitizedId = encodeURIComponent(promptId.trim());
       const res = await API.put(`/prompts/${sanitizedId}`, { isFeatured: !p.isFeatured });
-      setPrompts((prev) => prev.map((item) => (item._id === p._id ? res.data : item)));
+      setPrompts((prev) => prev.map((item) => (item._id === promptId ? res.data : item)));
     } catch (err) {
       alert('Failed to toggle featured status: ' + err.message);
     }
