@@ -30,12 +30,19 @@ jobs:
           port: ${{ secrets.EC2_PORT }}
           script_stop: true
           script: |
-            test -d /home/ubuntu/The-Prompt-Lab/.git || git clone https://github.com/farazAhmed03/The-Prompt-Lab.git /home/ubuntu/The-Prompt-Lab
+            bash -e << 'EOF'
+            if [[ ! -d "/home/ubuntu/The-Prompt-Lab/.git" ]]; then
+              git clone https://github.com/farazAhmed03/The-Prompt-Lab.git /home/ubuntu/The-Prompt-Lab
+            fi
+
             cd /home/ubuntu/The-Prompt-Lab
             git fetch --all
-            if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-              git reset --hard ${{ github.event.inputs.rollback_commit }}
+
+            if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.rollback_commit }}" ]]; then
+              git reset --hard "${{ github.event.inputs.rollback_commit }}"
             else
               git reset --hard origin/main
             fi
+
             bash ./scripts/deploy.sh
+            EOF
