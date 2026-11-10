@@ -7,6 +7,11 @@ on:
     branches: [ main ]
 
   workflow_dispatch:
+    inputs:
+      rollback_commit:
+        description: "Rollback to a specific commit"
+        required: false
+        type: string
 
 jobs:
   deploy:
@@ -14,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
-
+    
     steps:
       - name: SSH to EC2 and Deploy via Docker Compose
         uses: appleboy/ssh-action@v1.2.0
@@ -27,6 +32,10 @@ jobs:
           script: |
             test -d /home/ubuntu/The-Prompt-Lab/.git || git clone https://github.com/farazAhmed03/The-Prompt-Lab.git /home/ubuntu/The-Prompt-Lab
             cd /home/ubuntu/The-Prompt-Lab
-            git fetch origin main
-            git reset --hard origin/main
+            git fetch --all
+            if [ -n "${{ github.event_name }}" == "workflow_dispatch" ]; then
+              git reset --hard ${{ github.event.inputs.rollback_commit }}
+            else
+              git reset --hard origin/main
+            fi
             bash ./scripts/deploy.sh
